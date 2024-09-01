@@ -1,0 +1,137 @@
+﻿@model CoreMasterDetails.Models.Applicant
+
+@{
+    ViewData["Title"] = "Edit Applicant";
+}
+
+<h1>Edit Applicant</h1>
+
+@using (Html.BeginForm("Edit", "MasterDetails", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.Name)
+        @Html.TextBoxFor(model => model.Name, new { @class = "form-control" })
+        @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.Gender)
+        @Html.DropDownListFor(model => model.Gender, new List<SelectListItem>
+    {
+    new SelectListItem { Text = "Male", Value = "Male" },
+    new SelectListItem { Text = "Female", Value = "Female" },
+    new SelectListItem { Text = "Other", Value = "Other" }
+    }, "Select Gender", new { @class = "form-control" })
+        @Html.ValidationMessageFor(model => model.Gender, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.Age)
+        @Html.TextBoxFor(model => model.Age, new { @class = "form-control" })
+        @Html.ValidationMessageFor(model => model.Age, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.Qualification)
+        @Html.TextBoxFor(model => model.Qualification, new { @class = "form-control" })
+        @Html.ValidationMessageFor(model => model.Qualification, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.TotalExperience)
+        @Html.TextBoxFor(model => model.TotalExperience, new { @class = "form-control" })
+        @Html.ValidationMessageFor(model => model.TotalExperience, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.ProfilePhoto)
+        <input type="file" name="ProfilePhoto" class="form-control-file" />
+        @Html.ValidationMessageFor(model => model.ProfilePhoto, "", new { @class = "text-danger" })
+    </div>
+
+    <!-- Add fields for other properties of the Applicant model -->
+
+    <h2>Experience Information</h2>
+    <input type="hidden" id="deletedExperiences" name="DeletedExperiences" value="" />
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Company Name</th>
+                <th>Designation</th>
+                <th>Years Worked</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < Model.Experiences.Count; i++)
+            {
+                <tr data-experience-id="@Model.Experiences[i].ExperienceId">
+                    <td>
+                        @Html.HiddenFor(model => model.Experiences[i].ExperienceId)
+                        @Html.HiddenFor(model => model.Experiences[i].ApplicantId)
+                        @Html.EditorFor(model => model.Experiences[i].CompanyName)
+                    </td>
+                    <td>@Html.EditorFor(model => model.Experiences[i].Designation)</td>
+                    <td>@Html.EditorFor(model => model.Experiences[i].YearsWorked)</td>
+                    <td><button type="button" onclick="removeRow(this, @Model.Experiences[i].ExperienceId)">Remove</button></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <button type="button" onclick="addRow()">Add Experience</button>
+
+    <button type="submit">Save Changes</button>
+}
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        function addRow() {
+            var index = $("table tbody tr").length;
+            var newRow = `<tr data-experience-id="0">
+                        <td>
+                            <input type="hidden" name="Experiences[${index}].ExperienceId" value="0" />
+                            <input type="hidden" name="Experiences[${index}].ApplicantId" value="@Model.Id" />
+                            <input type="text" name="Experiences[${index}].CompanyName" class="form-control" />
+                        </td>
+                        <td><input type="text" name="Experiences[${index}].Designation" class="form-control" /></td>
+                        <td><input type="number" name="Experiences[${index}].YearsWorked" class="form-control" /></td>
+                        <td><button type="button" onclick="removeRow(this, 0)">Remove</button></td>
+                    </tr>`;
+            $("table tbody").append(newRow);
+        }
+
+        function removeRow(button, experienceId) {
+            $(button).closest('tr').remove();
+            var deletedExperiences = $("#deletedExperiences").val();
+            if (experienceId != 0) {
+                if (deletedExperiences) {
+                    deletedExperiences += "," + experienceId;
+                } else {
+                    deletedExperiences = experienceId;
+                }
+            }
+            $("#deletedExperiences").val(deletedExperiences);
+        }
+
+    </script>
+             
+    
+    <script>
+        function previewFile(input) {
+            var file = input.files[0];
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                $('#preview').attr('src', e.target.result).show();
+            }
+            reader.readAsDataURL(file);
+        }
+    </script>
+}
+
+
